@@ -15,6 +15,9 @@
     "@kirklin/logger": "^0.0.2",
     "@kirklin/reset-css": "^0.0.6",
     "cfuse": "^0.1.1",
+    "framer-motion": "^11.3.28",
+    "howler": "^2.2.4",
+    "lucide-react": "^0.429.0",
     "next": "14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -25,6 +28,7 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "^1.5.30",
     "@kirklin/eslint-config": "^2.5.0",
+    "@types/howler": "^2.2.11",
     "@types/node": "^20.14.11",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
