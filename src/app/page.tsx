@@ -46,7 +46,7 @@ export default function Home() {
   };
 
   useEffect(() => {
-    setCurrentScene(scenes[0]);
+    setCurrentScene(scenes[1]);
     return () => {
       if (sound) {
         sound.unload();
