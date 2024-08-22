@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Howl } from "howler";
 import { Pause, Play, Skull, Tent, Trees, Waves } from "lucide-react";
 
@@ -18,9 +18,9 @@ export default function Home() {
   const [title, setTitle] = useState<string>("未知曲目");
 
   const scenes: SceneData[] = [
-    { name: "海边", sound: "/sounds/sea-horror.mp3", title: "海边恐怖音乐" },
-    { name: "营地", sound: "/sounds/camp-horror.mp3", title: "营地恐怖音乐" },
-    { name: "森林", sound: "/sounds/forest-horror.mp3", title: "森林恐怖音乐" },
+    { name: "海边", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\sea\\1.mp3", title: "海边恐怖音乐" },
+    { name: "营地", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\camp\\1.mp3", title: "营地恐怖音乐" },
+    { name: "森林", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\forest\\1.mp3", title: "森林恐怖音乐" },
   ];
 
   const sceneIcons: { [key: string]: JSX.Element } = {
@@ -95,72 +95,88 @@ export default function Home() {
   };
 
   return (
-    <main className="flex flex-col items-center justify-between min-h-screen bg-gradient-to-b from-[#1a0f1d] to-[#2c1e30] text-[#e0e0e0] p-6">
+    <main
+      className="flex flex-col items-center justify-between min-h-screen bg-cover bg-center text-white p-6 relative overflow-hidden"
+      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1664548726625-59094a8b72f4?q=80&w=1588&auto=format&fit=crop')" }}
+    >
+      <AnimatePresence>
+        {isPlaying && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-10"
+          />
+        )}
+      </AnimatePresence>
+
       <motion.div
-        className="text-center mb-8"
+        className="text-center mb-8 z-20"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-4xl font-bold mb-2 text-[#ff6b6b]">恐怖氛围制造机</h1>
-        <h2 className="text-xl text-[#e0e0e0] flex items-center justify-center">
+        <h1 className="text-4xl font-bold mb-2 text-red-500">恐怖氛围制造机</h1>
+        <h2 className="text-xl text-white flex items-center justify-center">
           当前场景:
           {" "}
-          <span className="font-semibold text-[#ff6b6b] ml-2 flex items-center">
+          <span className="font-semibold text-red-500 ml-2 flex items-center">
             {sceneIcons[scene]}
             <span className="ml-1">{scene}</span>
           </span>
         </h2>
       </motion.div>
 
-      <div className="flex flex-col items-center mb-8">
+      <div className="flex-grow flex flex-col items-center justify-center z-20">
         <motion.div
-          className="text-2xl font-bold mb-4 text-[#ff6b6b] flex items-center justify-center"
+          className="text-2xl font-bold mb-4 text-red-500 flex items-center justify-center"
           animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
           <Skull className="mr-2" />
           {title}
         </motion.div>
-        <div className="text-xl text-[#e0e0e0]">{formatTime(playTime)}</div>
+        <div className="text-xl text-white mb-4">{formatTime(playTime)}</div>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={togglePlay}
+          className="rounded-full p-6 backdrop-blur-md bg-none shadow-lg transition-all hover:bg-white/20"
+        >
+          {isPlaying
+            ? <Pause className="h-12 w-12 text-white" />
+            : <Play className="h-12 w-12 text-white" />}
+        </motion.button>
       </div>
 
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={togglePlay}
-        className="mb-12 rounded-full bg-[#ff6b6b] p-6 shadow-lg transition-colors hover:bg-[#ff4757]"
+      <motion.div
+        className="w-full max-w-md z-20"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
       >
-        {isPlaying
-          ? (
-              <Pause className="h-12 w-12 text-[#1a0f1d]" />
-            )
-          : (
-              <Play className="h-12 w-12 text-[#1a0f1d]" />
-            )}
-      </motion.button>
-
-      <div className="flex justify-around w-full">
-        {scenes.map((scn, index) => (
-          <motion.button
-            key={scn.name}
-            onClick={() => changeScene(scn)}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-            className={`w-24 h-24 rounded-xl flex flex-col items-center justify-center text-sm font-medium shadow-md transition-colors ${
-                      scene === scn.name
-                          ? "bg-[#ff6b6b] text-[#1a0f1d]"
-                          : "backdrop-blur-md bg-white/10 text-[#e0e0e0]"
-                  }`}
-          >
-            {sceneIcons[scn.name]}
-            <span className="mt-2">{scn.name}</span>
-          </motion.button>
-        ))}
-      </div>
+        <div className="flex justify-around w-full">
+          {scenes.map((scn, index) => (
+            <motion.button
+              key={scn.name}
+              onClick={() => changeScene(scn)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              className={`w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-medium shadow-md transition-colors ${
+                        scene === scn.name
+                            ? "bg-red-500 text-white"
+                            : "backdrop-blur-md bg-white/10 text-white"
+                    }`}
+            >
+              {sceneIcons[scn.name]}
+              <span className="mt-1">{scn.name}</span>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
     </main>
   );
 }
