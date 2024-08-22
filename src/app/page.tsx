@@ -8,6 +8,7 @@ interface SceneData {
   name: string;
   sound: string;
   title: string;
+  backgroundImage: string;
 }
 
 export default function Home() {
@@ -18,9 +19,24 @@ export default function Home() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const scenes: SceneData[] = [
-    { name: "海边", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/sea/1.mp3", title: "海边恐怖音乐" },
-    { name: "营地", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/camp/1.mp3", title: "营地恐怖音乐" },
-    { name: "森林", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/forest/1.mp3", title: "森林恐怖音乐" },
+    {
+      name: "海边",
+      sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/sea/1.mp3",
+      title: "海边恐怖音乐",
+      backgroundImage: "https://images.unsplash.com/photo-1503925802536-c9451dcd87b5?q=80&w=1740&auto=format&fit=crop"
+    },
+    {
+      name: "营地",
+      sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/camp/1.mp3",
+      title: "营地恐怖音乐",
+      backgroundImage: "https://images.unsplash.com/photo-1664548726625-59094a8b72f4?q=80&w=1588&auto=format&fit=crop"
+    },
+    {
+      name: "森林",
+      sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/forest/1.mp3",
+      title: "森林恐怖音乐",
+      backgroundImage: "https://images.unsplash.com/photo-1509401238785-48c8e54d23f8?q=80&w=1887&auto=format&fit=crop"
+    }
   ];
 
   const sceneIcons: { [key: string]: JSX.Element } = {
@@ -113,18 +129,18 @@ export default function Home() {
   return (
       <main
           className="flex flex-col items-center justify-between min-h-screen bg-cover bg-center text-white p-6 relative overflow-hidden"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1664548726625-59094a8b72f4?q=80&w=1588&auto=format&fit=crop')" }}
+          style={{ backgroundImage: `url(${currentScene?.backgroundImage || ''})` }}
       >
-      <AnimatePresence>
-        {isPlaying && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-10"
-          />
-        )}
-      </AnimatePresence>
+        <AnimatePresence>
+          {isPlaying && (
+              <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-10"
+              />
+          )}
+        </AnimatePresence>
 
         <motion.div
             className="text-center mb-8 z-20"
@@ -165,34 +181,34 @@ export default function Home() {
           </motion.button>
         </div>
 
-      <motion.div
-        className="w-full max-w-md z-20"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <div className="flex justify-around w-full">
-          {scenes.map((scn, index) => (
-            <motion.button
-              key={scn.name}
-              onClick={() => changeScene(scn)}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              className={`w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-medium shadow-md transition-colors ${
-                            currentScene?.name === scn.name
+        <motion.div
+            className="w-full max-w-md z-20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="flex justify-around w-full">
+            {scenes.map((scn, index) => (
+                <motion.button
+                    key={scn.name}
+                    onClick={() => changeScene(scn)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    className={`w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-medium shadow-md transition-colors ${
+                        currentScene?.name === scn.name
                             ? "bg-red-500 text-white"
                             : "backdrop-blur-md bg-white/10 text-white"
                     }`}
-            >
-              {sceneIcons[scn.name]}
-              <span className="mt-1">{scn.name}</span>
-            </motion.button>
-          ))}
-        </div>
-      </motion.div>
+                >
+                  {sceneIcons[scn.name]}
+                  <span className="mt-1">{scn.name}</span>
+                </motion.button>
+            ))}
+          </div>
+        </motion.div>
       </main>
   );
 }
