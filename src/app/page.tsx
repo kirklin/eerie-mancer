@@ -18,9 +18,9 @@ export default function Home() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const scenes: SceneData[] = [
-    { name: "海边", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\sea\\1.mp3", title: "海边恐怖音乐" },
-    { name: "营地", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\camp\\1.mp3", title: "营地恐怖音乐" },
-    { name: "森林", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\forest\\1.mp3", title: "森林恐怖音乐" },
+    { name: "海边", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/sea/1.mp3", title: "海边恐怖音乐" },
+    { name: "营地", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/camp/1.mp3", title: "营地恐怖音乐" },
+    { name: "森林", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes/forest/1.mp3", title: "森林恐怖音乐" },
   ];
 
   const sceneIcons: { [key: string]: JSX.Element } = {
@@ -56,6 +56,7 @@ export default function Home() {
     const newSound = new Howl({
       src: [sceneData.sound],
       loop: true,
+      preload: true,
       onplay: () => {
         setIsPlaying(true);
         startTimer();
