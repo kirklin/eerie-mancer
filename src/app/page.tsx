@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Howl } from "howler";
 import { Pause, Play, Skull, Tent, Trees, Waves } from "lucide-react";
@@ -11,11 +11,11 @@ interface SceneData {
 }
 
 export default function Home() {
-  const [scene, setScene] = useState<string>("海边");
+  const [currentScene, setCurrentScene] = useState<SceneData | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [sound, setSound] = useState<Howl | null>(null);
   const [playTime, setPlayTime] = useState<number>(0);
-  const [title, setTitle] = useState<string>("未知曲目");
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const scenes: SceneData[] = [
     { name: "海边", sound: "https://silge-test.oss-rg-china-mainland.aliyuncs.com/vibes\\sea\\1.mp3", title: "海边恐怖音乐" },
@@ -30,24 +30,24 @@ export default function Home() {
   };
 
   useEffect(() => {
+    setCurrentScene(scenes[0]);
     return () => {
       if (sound) {
         sound.unload();
       }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [sound]);
+  }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setPlayTime(prevTime => prevTime + 1);
-      }, 1000);
+    if (currentScene) {
+      loadSound(currentScene);
     }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
+  }, [currentScene]);
 
-  const loadAndPlaySound = (sceneData: SceneData) => {
+  const loadSound = (sceneData: SceneData) => {
     if (sound) {
       sound.stop();
       sound.unload();
@@ -57,35 +57,50 @@ export default function Home() {
       src: [sceneData.sound],
       loop: true,
       onplay: () => {
-        setTitle(sceneData.title);
         setIsPlaying(true);
+        startTimer();
+      },
+      onpause: () => {
+        setIsPlaying(false);
+        stopTimer();
       },
       onstop: () => {
-        setTitle("未知曲目");
-        setPlayTime(0);
         setIsPlaying(false);
+        setPlayTime(0);
+        stopTimer();
       },
     });
 
     setSound(newSound);
-    newSound.play();
   };
 
   const togglePlay = () => {
     if (sound) {
       if (isPlaying) {
         sound.pause();
-        setIsPlaying(false);
       } else {
         sound.play();
-        setIsPlaying(true);
       }
     }
   };
 
   const changeScene = (newScene: SceneData) => {
-    setScene(newScene.name);
-    loadAndPlaySound(newScene);
+    setCurrentScene(newScene);
+    setPlayTime(0);
+  };
+
+  const startTimer = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+      setPlayTime(prevTime => prevTime + 1);
+    }, 1000);
+  };
+
+  const stopTimer = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -95,10 +110,10 @@ export default function Home() {
   };
 
   return (
-    <main
-      className="flex flex-col items-center justify-between min-h-screen bg-cover bg-center text-white p-6 relative overflow-hidden"
-      style={{ backgroundImage: "url('https://images.unsplash.com/photo-1664548726625-59094a8b72f4?q=80&w=1588&auto=format&fit=crop')" }}
-    >
+      <main
+          className="flex flex-col items-center justify-between min-h-screen bg-cover bg-center text-white p-6 relative overflow-hidden"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1664548726625-59094a8b72f4?q=80&w=1588&auto=format&fit=crop')" }}
+      >
       <AnimatePresence>
         {isPlaying && (
           <motion.div
@@ -110,44 +125,44 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <motion.div
-        className="text-center mb-8 z-20"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <h1 className="text-4xl font-bold mb-2 text-red-500">恐怖氛围制造机</h1>
-        <h2 className="text-xl text-white flex items-center justify-center">
-          当前场景:
-          {" "}
-          <span className="font-semibold text-red-500 ml-2 flex items-center">
-            {sceneIcons[scene]}
-            <span className="ml-1">{scene}</span>
-          </span>
-        </h2>
-      </motion.div>
-
-      <div className="flex-grow flex flex-col items-center justify-center z-20">
         <motion.div
-          className="text-2xl font-bold mb-4 text-red-500 flex items-center justify-center"
-          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
-          transition={{ repeat: Infinity, duration: 2 }}
+            className="text-center mb-8 z-20"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
         >
-          <Skull className="mr-2" />
-          {title}
+          <h1 className="text-4xl font-bold mb-2 text-red-500">恐怖氛围制造机</h1>
+          <h2 className="text-xl text-white flex items-center justify-center">
+            当前场景:
+            {" "}
+            <span className="font-semibold text-red-500 ml-2 flex items-center">
+            {currentScene && sceneIcons[currentScene.name]}
+              <span className="ml-1">{currentScene?.name}</span>
+          </span>
+          </h2>
         </motion.div>
-        <div className="text-xl text-white mb-4">{formatTime(playTime)}</div>
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          onClick={togglePlay}
-          className="rounded-full p-6 backdrop-blur-md bg-none shadow-lg transition-all hover:bg-white/20"
-        >
-          {isPlaying
-            ? <Pause className="h-12 w-12 text-white" />
-            : <Play className="h-12 w-12 text-white" />}
-        </motion.button>
-      </div>
+
+        <div className="flex-grow flex flex-col items-center justify-center z-20">
+          <motion.div
+              className="text-2xl font-bold mb-4 text-red-500 flex items-center justify-center"
+              animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <Skull className="mr-2" />
+            {currentScene?.title || "未知曲目"}
+          </motion.div>
+          <div className="text-xl text-white mb-4">{formatTime(playTime)}</div>
+          <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={togglePlay}
+              className="rounded-full p-6 backdrop-blur-md bg-none shadow-lg transition-all hover:bg-white/20"
+          >
+            {isPlaying
+                ? <Pause className="h-12 w-12 text-white" />
+                : <Play className="h-12 w-12 text-white" />}
+          </motion.button>
+        </div>
 
       <motion.div
         className="w-full max-w-md z-20"
@@ -166,7 +181,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
               className={`w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-medium shadow-md transition-colors ${
-                        scene === scn.name
+                            currentScene?.name === scn.name
                             ? "bg-red-500 text-white"
                             : "backdrop-blur-md bg-white/10 text-white"
                     }`}
@@ -177,6 +192,6 @@ export default function Home() {
           ))}
         </div>
       </motion.div>
-    </main>
+      </main>
   );
 }
